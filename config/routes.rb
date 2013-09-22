@@ -4,6 +4,7 @@ SeatYourself2::Application.routes.draw do
 
   resources :restaurants do 
     resources :reservations
+    resources :reviews, :except => [:index]
    end 
 
   resources :users, :only => [:new, :create] 
