@@ -1,0 +1,15 @@
+<h1>Restaurant Listing</h1>
+
+
+<% @restaurants.each do |restaurant| %>
+  <div class="restaurant_display">
+    <h2><%= link_to restaurant.name, restaurant %></h2>
+    Category: <%= restaurant.category %> 
+    Price Range: <%= restaurant.price_range %><br>
+    <%= restaurant.address %><br>
+    <%= restaurant.neighbourhood %><br>
+    <%= restaurant.phone %><br>
+    <p><%= restaurant.description %></p>
+  </div>
+  <br>
+<% end %>
