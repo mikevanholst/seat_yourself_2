@@ -1,0 +1,18 @@
+<%= link_to "Edit", edit_restaurant_path %>
+
+<div class="restaurant_display">
+<h1><%= @restaurant.name %></h1>
+Category: <%= @restaurant.category %>
+Price Range: <%= @restaurant.price_range %>
+<br>
+<%= @restaurant.address %><%= @restaurant.neighbourhood %>
+<br>
+<%= @restaurant.phone %>
+<br>
+<%= @restaurant.description %>
+</div>
+
+<%#= render 'reservations/form' %>
+
+
+<%= link_to "Make a reservation", new_restaurant_reservation_path(restaurant_id: @restaurant.id) %>

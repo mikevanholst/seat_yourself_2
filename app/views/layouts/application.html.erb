@@ -8,7 +8,33 @@
 </head>
 <body>
 
-<%= yield %>
+
+  <div id="container"> 
+
+    <div id="banner">
+    <h1>Seat Yourself Restaurant Reservation Service<h1>
+    </div>
+
+    <div class = "flash">
+      <% if flash[:notice] %>
+        <p id="notice"><%= flash[:notice] %></p>
+      <% end %>
+
+      <% if flash[:alert] %>
+        <p id="alert"><%= flash[:alert] %></p>
+        <% end %>
+    </div>
+
+
+    <%= link_to "Home", root_path %> |
+    <%= link_to "Listings",  restaurants_path %> |
+
+    <%#= link_to "Sign up", new_user_path %> |
+    <!-- add logic for owners here -->
+    <%= (link_to "Add New", new_restaurant_path) if true %> | 
+
+    <%= yield %>
+  </div>
 
 </body>
 </html>
