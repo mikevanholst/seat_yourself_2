@@ -29,8 +29,13 @@
     </div><br>
    
     <div class="field">
-      <%= f.label :category %>
+      <%= f.label :category, "Category or Categories" %>
       <%= f.text_field :category %>
+
+<%#= select_tag "restaurant[category_ids][]", 
+ options_for_select(@categores.collect{|c|c.name, c.id]}), 
+ {multiple: :true, size: 10} %>
+
     </div><br>
    
     <div class="field">

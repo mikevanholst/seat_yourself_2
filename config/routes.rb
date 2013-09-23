@@ -8,7 +8,7 @@ SeatYourself2::Application.routes.draw do
    end 
 
   resources :users, :only => [:new, :create] 
-
+  resources :categories
 
   # You can have the root of your site routed with "root"
   

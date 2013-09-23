@@ -12,7 +12,7 @@ FactoryGirl.define do
       price_range { ["under $10", "$10 to $15", "$15 to $25","$25 to $30", "over $30"].sample }
       neighbourhood { Faker::Address.city }
       description { Faker::Lorem.paragraph(2) }
-      category "Fusion"
+      :category
     end
 
   end

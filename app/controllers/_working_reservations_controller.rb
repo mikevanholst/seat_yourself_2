@@ -16,27 +16,23 @@ class ReservationsController < ApplicationController
     @user = User.find(1) 
     @reservation = @restaurant.reservations.build(reservation_params)
     @reservation.user_id = @user.id  #whith sorcery add current_user.id
-  
+    # seats = @restaurant.seats 
 
-    response = check_reservations
-    case response
-    when  "restaurant_capacity_failure"
-     redirect_to restaurants_path, notice: "We are sorry, #{@restaurant.name} does not have sufficient capacity to accomodate your party."
-    when  "tables_available"
+    if restaurant_full
+      # make_suggestions and return
+
+      redirect_to restaurant_path(@restaurant), notice: "Sorry, your party cannot be seated at that time."
+    else
       if @reservation.save
         date_display = @reservation.day.strftime("%A, %b %d")
         time_display = @reservation.meal_time.strftime("%I:%M %p")
         redirect_to restaurant_path(@restaurant), 
           notice: "You have made a reservation at #{@restaurant.name}
-          for #{@reservation.party_size} people, on #{date_display} at #{time_display}" 
+          for #{@reservation.party_size} people, on #{date_display} at #{time_display}" and return
       else
-        render new_restaurant_reservation_path(@restaurant), notice: "Sorry an error has occured"
+        render :new
       end
-    when  "completely_booked"
-        redirect_to restaurants_url, notice: "We are sorry, #{@restaurant.name} cannot accomodate your party on #{@reservation.day}."
-    when  "suggestions"
-       render :new, notice: "Sorry, your party cannot be seated at that time. We do have room at #{@suggested_times.join(", or")}."
-    end       
+    end        
   end
 
 
@@ -55,72 +51,62 @@ class ReservationsController < ApplicationController
      @restaurant = Restaurant.find(params[:restaurant_id])
   end
 
+  def restaurant_capacity_failure
+      redirect_to restaurants_path, notice: "We are sorry, #{@restaurant.name} does not have sufficient capacity to accomodate your party."
+  end
+
+
   def reservation_params
     params.require(:reservation).permit(:party_size, :time_slot, :date, :day, :meal_time)
   end
 
-def check_reservations
-  seats = @restaurant.seats 
+  def restaurant_full
 
-#determine if the restaurant is big enough
-  if seats < @reservation.party_size
-      return "restaurant_capacity_failure"
-  end
+    seats = @restaurant.seats    
+    # if seats < @reservation.party_size
+    #   return restaurant_capacity_failure
+    #   # return redirect_to restaurants_path, notice: "We are sorry, #{@restaurant.name} does not have sufficient capacity to accomodate your party."
+      
+    # end  
+    reserved_seats = 0 
+    reservation_hour = @reservation.meal_time.hour
+    reservation_minutes = @reservation.meal_time.min
+    @bookings = []
+    @bookings = @restaurant.reservations.where(:day => @reservation.day)
+    return false if @bookings.empty?
 
-# if there are no reservations yet then book the party
-  @bookings = []
-  @bookings = @restaurant.reservations.where(:day => @reservation.day)
-  if @bookings.empty?
-    return "tables_available"
-  end
-    
-# fetch the reservation time 
-  reservation_hour = @reservation.meal_time.hour
-  reservation_minutes = @reservation.meal_time.min
-
-#find out how many seats have been booked within an hour of the resrevation  
-  reserved_seats = 0 
-  @bookings.each do |b| 
-    conflict = false
-    booking_hour = b.meal_time.hour
-    booking_minutes = b.meal_time.min
-    conflict = true if  booking_hour == reservation_hour
-    conflict = true if (booking_hour == (reservation_hour + 1) && booking_minutes < reservation_minutes )    
-    conflict = true if (booking_hour == (reservation_hour - 1) && booking_minutes > reservation_minutes )    
-    reserved_seats = reserved_seats + b.party_size if conflict == true
-  end
-
-# find out the number of vacant seats at reservation time  
-  vacant_seats = seats - reserved_seats
-
-# determine if there are enough seats available for the party.  
-  if vacant_seats >= @reservation.party_size
-    return "tables_available"
+    @bookings.each do |b| 
+      conflict = false
+      booking_hour = b.meal_time.hour
+      booking_minutes = b.meal_time.min
+      conflict = true if  booking_hour == reservation_hour
+      conflict = true if (booking_hour == (reservation_hour + 1) && booking_minutes < reservation_minutes )    
+      conflict = true if (booking_hour == (reservation_hour - 1) && booking_minutes > reservation_minutes )    
+      reserved_seats = reserved_seats + b.party_size if conflict == true
+    end
+    vacant_seats = seats - reserved_seats
+    if vacant_seats > @reservation.party_size
+      return false
+    else
+      return true 
+    end   
   end 
 
-# try to find an available reservation time later and earlier in the day.
-   @suggested_times = []
 
-# bump the reservation time up to the next quarter hour
-  find_next_quarter_hour(@reservation.meal_time)
-
-# look for a later time and add it to suggested times
+  def make_suggestions
+    suggested_times = []
+    find_next_quarter_hour(@reservation.meal_time)
     find_later_time(@new_time)
-    @suggested_times << @later_time
-
- # look for a later time and add it to suggested times   
+    suggested_times << @later_time
     find_earlier_time(@new_time)
-    @suggested_times << @earlier_time
-
-# forward recomendations or apologize if the restaurant is booked for the day    
-    if @suggested_times.empty?
-      return "completely_booked"
+    suggested_times << @earlier_time
+    if suggested_times.empty?
+      redirect_to restaurants_url, notice: "We are sorry, #{@restaurant.name} annot accomodate your party on #{@reservation.day}." and return
     else
-      return "suggestions"
+      render :new, notice: "Sorry, your party cannot be seated at that time. We do have room at" and return 
+      #{suggested_times.join(", or")}."
     end
-
-end
-
+  end
 
   def find_next_quarter_hour(old_time)
     #increases reservation time to the next higher quarter hour
@@ -148,7 +134,7 @@ end
 
   def find_later_time(new_time)
     trial_time = new_time
-    while trial_time.hour <= (14) #(closing_time - 1.hour)
+    while trial_time.hour <= (20) #(closing_time - 1.hour)
       # time_available?(trial_time)
       if time_available?(trial_time)
         return @later_time = trial_time.strftime("%I:%M %p")
@@ -165,7 +151,7 @@ end
       if time_available?(trial_time)
         return @earlier_time = trial_time.strftime("%I:%M %p")
       else
-        trial_time -= 15.minutes
+        trial_time += 15.minutes
       end
     end
   end 
@@ -193,7 +179,7 @@ end
       reserved_seats = reserved_seats + b.party_size if conflict == true
     end
     vacant_seats = seats - reserved_seats
-    if vacant_seats >= @reservation.party_size
+    if vacant_seats > @reservation.party_size
       return true
     else
       return false 

@@ -2,7 +2,7 @@
 
 <div class="restaurant_display">
 <h1><%= @restaurant.name %></h1>
-Category: <%= @restaurant.category %>
+Category: <%= @restaurant.categories.map { |c| c.name}.join(", ") %>
 Price Range: <%= @restaurant.price_range %>
 <br>
 <%= @restaurant.address %><%= @restaurant.neighbourhood %>
