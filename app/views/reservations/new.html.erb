@@ -3,6 +3,7 @@
  <%= @suggested_times %>
  <%= @later_time %>
  <%= @earlier_time %>
+ 
 <%= form_for [@restaurant,@reservation] do |f| %>
   <% if @reservation.errors.any? %>
     <div class="error_messages">

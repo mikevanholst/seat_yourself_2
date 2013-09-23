@@ -33,10 +33,13 @@ class ReservationsController < ApplicationController
         render new_restaurant_reservation_path(@restaurant), notice: "Sorry an error has occured"
       end
     when  "completely_booked"
-        redirect_to restaurants_url, notice: "We are sorry, #{@restaurant.name} cannot accomodate your party on #{@reservation.day}."
+        #redirect_to restaurants_url, 
+        redirect_to restaurant_path(@restaurant), notice: "We are sorry, #{@restaurant.name} cannot accomodate your party on #{@reservation.day}."
     when  "suggestions"
-       render :new, notice: "Sorry, your party cannot be seated at that time. We do have room at #{@suggested_times.join(", or")}."
-    end       
+       flash.now[:notice] = "Sorry, your party cannot be seated at that time. We do have room at #{@suggested_times.join(", or ")}."
+
+       render :new 
+        end       
   end
 
 
@@ -106,11 +109,11 @@ def check_reservations
 
 # look for a later time and add it to suggested times
     find_later_time(@new_time)
-    @suggested_times << @later_time
+    @suggested_times << @later_time if @later_time
 
  # look for a later time and add it to suggested times   
     find_earlier_time(@new_time)
-    @suggested_times << @earlier_time
+    @suggested_times << @earlier_time if @earlier_time
 
 # forward recomendations or apologize if the restaurant is booked for the day    
     if @suggested_times.empty?
