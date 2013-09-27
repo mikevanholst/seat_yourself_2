@@ -1,6 +1,6 @@
-<div>
-    <% @restaruant.reviews.newest_first.each do |review| %>
-        <p>
+  
+    <% @restaurant.reviews.newest_first.each do |review| %>
+        <p class="comment">
           <%= review.content %>
           <br>
           <% if review.user != nil %>
@@ -9,4 +9,4 @@
           <% end %>
         </p>
     <% end %>
-</div>
+

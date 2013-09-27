@@ -18,10 +18,21 @@ Price Range: <%= @restaurant.price_range %>
 <div class = "reviews">
   <h3>Reviews for <%= @restaurant.name %></h3>
   <%# if current_user %>
-    <%#= render '/reviews/new_review' %> 
-    <%#= render '/reviews/reviews' %>
-  
+    <%= render '/reviews/new_review' %> 
+    <div id="review-list">
+      <%= render '/reviews/reviews' %>
+    </div>
+
+
   <%# else %>  
     <p>Please <%#= link_to "log in", new_session_path %> to add a review.</p>
   <%# end %>
 </div>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+  $("review-list.")
+
+})
+ </script>

@@ -3,6 +3,7 @@ class ReviewsController < ApplicationController
   before_action :remember_restaurant 
 
   def new
+
     if Rails.env.development?
       @review = FactoryGirl.build(:review)
     else
@@ -11,15 +12,23 @@ class ReviewsController < ApplicationController
   end
 
   def create
-    @review = Review.new(review_params)   
+
+    # @review = Review.new(review_params)  ok but has no restaurant associated
+    #@review.restaurant_id = @restaurant.id or params[:restaurant_id]
+    @review = @restaurant.reviews.build(review_params)
     @review.user_id = 1 #current_user.id 
 
-    if @review.save
-      redirect_to restaurant_path(:restaurant_id), notice: "Thank you for adding a review."
-    else
-      render action: :show
-    end  
+    respond_to  do |format|
+      if @review.save
+        format.html { redirect_to @review.restaurant, notice: "Thank you for adding a review." }
+        format.js {}
+      else
+        format.html {render action: :show}
+        format.js {}
+      end  
+    end
   end
+
 
   def show
     #remember_restaurant

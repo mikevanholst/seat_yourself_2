@@ -1,25 +1,36 @@
+<script type="text/javascript">
 
-<%#= form_for([@restaurant, @review]) do |f| %>
-<%= form_for([@restaurant, Review.new]) do |f| %>
+  $(function() {
+    $("#new_review")
+      .on('ajax:beforeSend', function(){
+        $("input[type='submit']")
+          .val('Saving...')
+            .attr('disabled', 'disabled');
+      })
+      .on('ajax:complete', function(){
+        $("input[type='submit']")
+          .val('Create Review')
+            .removeAttr('disabled');
+      });
+  })
+</script>
 
-      <% if @review.errors.any? %>
-        <div id="error_explanation">
-          <h2><%= pluralize(@review.errors.count, "error")%> prohibited this review from being saved:</h2>
-          <ul>
-            <% @review.errors.full_messages.each do |msg| %>
-              <li><%= msg %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+
+<%#= form_for([@restaurant, Review.new]) do |f| %>
+<%= form_for([@restaurant, @review], :remote =>  true) do |f| %>
+
+  <div id="review_form_errors">
+    <%= render partial: '/reviews/review_form_errors' %>
+  </div>
+
   
+    <div class="field">
+    <%= f.label :content %><br> 
+      <%= f.text_area :content %>
+    </div>
+    <div class="actions">
+      <%= f.submit %>
+    </div>
 
-
-      <div class="field">
-      <!--   <%= f.label :content %><br> -->
-        <%= f.text_area :content %>
-      </div>
-      <div class="actions">
-        <%= f.submit %>
-      </div>
-    <% end %>
+<% end %>
+ 
